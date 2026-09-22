@@ -9,7 +9,7 @@ RUN npm run build
 # ---- PHPアプリ本体 ----
 FROM php:8.3-cli
 RUN apt-get update && apt-get install -y \
-    git curl libpng-dev libonig-dev libxml2-dev zip unzip libzip-dev libsqlite3-dev libpq-dev \
+    git curl libpng-dev libonig-dev libxml2-dev zip unzip libzip-dev libsqlite3-dev libpq-dev libcurl4-openssl-dev \
     && docker-php-ext-install pdo pdo_mysql pdo_sqlite pdo_pgsql mbstring exif pcntl bcmath gd zip curl
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -23,7 +23,3 @@ RUN chmod -R 775 storage bootstrap/cache
 
 EXPOSE 10000
 CMD sh -c "php artisan migrate --force; php artisan storage:link; php artisan serve --host 0.0.0.0 --port ${PORT:-10000}"
-
-
-
-
