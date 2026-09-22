@@ -40,12 +40,12 @@ class ProjectController extends Controller
         $data['slug'] = Project::generateUniqueSlug($request->string('title'));
 
         if ($request->hasFile('thumbnail')) {
-            $data['thumbnail_path'] = $request->file('thumbnail')->store('projects/thumbnails', 'public');
+            $data['thumbnail_path'] = $request->file('thumbnail')->store('projects/thumbnails', 's3');
         }
 
         if ($request->hasFile('screenshots')) {
             $data['screenshots'] = collect($request->file('screenshots'))
-                ->map(fn ($file) => $file->store('projects/screenshots', 'public'))
+                ->map(fn ($file) => $file->store('projects/screenshots', 's3'))
                 ->all();
         }
 
@@ -78,19 +78,19 @@ class ProjectController extends Controller
             if ($project->thumbnail_path) {
                 Storage::disk('public')->delete($project->thumbnail_path);
             }
-            $data['thumbnail_path'] = $request->file('thumbnail')->store('projects/thumbnails', 'public');
+            $data['thumbnail_path'] = $request->file('thumbnail')->store('projects/thumbnails', 's3');
         }
 
         $screenshots = collect($project->screenshots ?? []);
 
         if ($remove = $request->input('remove_screenshots')) {
-            Storage::disk('public')->delete($remove);
+            Storage::disk('s3')->delete($remove);
             $screenshots = $screenshots->diff($remove)->values();
         }
 
         if ($request->hasFile('screenshots')) {
             $newPaths = collect($request->file('screenshots'))
-                ->map(fn ($file) => $file->store('projects/screenshots', 'public'));
+                ->map(fn ($file) => $file->store('projects/screenshots', 's3'));
             $screenshots = $screenshots->merge($newPaths)->values();
         }
 
@@ -108,9 +108,9 @@ class ProjectController extends Controller
     public function destroy(Project $project): RedirectResponse
     {
         if ($project->thumbnail_path) {
-            Storage::disk('public')->delete($project->thumbnail_path);
+            Storage::disk('s3')->delete($project->thumbnail_path);
         }
-        Storage::disk('public')->delete($project->screenshots ?? []);
+        Storage::disk('s3')->delete($project->screenshots ?? []);
 
         $title = $project->title;
         $project->delete();
