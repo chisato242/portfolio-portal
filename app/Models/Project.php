@@ -81,7 +81,7 @@ class Project extends Model
     protected function thumbnailUrl(): Attribute
     {
         return Attribute::get(fn () => $this->thumbnail_path
-            ? Storage::disk('public')->url($this->thumbnail_path)
+            ? Storage::disk('s3')->url($this->thumbnail_path)
             : null);
     }
 
@@ -89,7 +89,7 @@ class Project extends Model
     {
         return Attribute::get(function () {
             return collect($this->screenshots ?? [])
-                ->map(fn (string $path) => Storage::disk('public')->url($path))
+                ->map(fn (string $path) => Storage::disk('s3')->url($path))
                 ->values()
                 ->all();
         });
